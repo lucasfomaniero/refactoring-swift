@@ -92,7 +92,7 @@ class FileUtil {
                 
         }
         result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
-        result += "Your earned \(volumeCredits) credits\n"
+        result += "Your earned \(volumeCredits) credit\n"
         return result
     }
 
