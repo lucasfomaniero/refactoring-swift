@@ -1,0 +1,10 @@
+
+[
+    { "customer": "BigCo",
+        "performances":[ { "playID": "hamlet", "audience": 55 }, { "playID": "as-like", "audience": 35 }, { "playID": "othello", "audience": 40 } ]
+    } ,
+    {
+        "customer": "Lucas Maniero",
+        "performances":[ { "playID": "hamlet", "audience": 70 }, { "playID": "as-like", "audience": 10 }, { "playID": "othello", "audience": 100 } ]
+    }
+]
