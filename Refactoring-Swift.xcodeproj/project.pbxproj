@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1B7886D629D9AA390045CB3C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B7886D529D9AA390045CB3C /* Types.swift */; };
 		1BA981D829D53CEF003163E1 /* Refactoring_SwiftApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA981D729D53CEF003163E1 /* Refactoring_SwiftApp.swift */; };
 		1BA981DA29D53CEF003163E1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA981D929D53CEF003163E1 /* ContentView.swift */; };
 		1BA981DC29D53CF1003163E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1BA981DB29D53CF1003163E1 /* Assets.xcassets */; };
@@ -40,6 +41,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1B7886D529D9AA390045CB3C /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		1BA981D429D53CEF003163E1 /* Refactoring-Swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Refactoring-Swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1BA981D729D53CEF003163E1 /* Refactoring_SwiftApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Refactoring_SwiftApp.swift; sourceTree = "<group>"; };
 		1BA981D929D53CEF003163E1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -84,6 +86,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1B7886D429D9AA200045CB3C /* Enums */ = {
+			isa = PBXGroup;
+			children = (
+				1B7886D529D9AA390045CB3C /* Types.swift */,
+			);
+			path = Enums;
+			sourceTree = "<group>";
+		};
 		1BA981CB29D53CEF003163E1 = {
 			isa = PBXGroup;
 			children = (
@@ -107,6 +117,7 @@
 		1BA981D629D53CEF003163E1 /* Refactoring-Swift */ = {
 			isa = PBXGroup;
 			children = (
+				1B7886D429D9AA200045CB3C /* Enums */,
 				1BA9820E29D53E73003163E1 /* Errors */,
 				1BA9820229D53D0E003163E1 /* Files */,
 				1BA9820129D53CFF003163E1 /* Models */,
@@ -305,6 +316,7 @@
 				1BA981DA29D53CEF003163E1 /* ContentView.swift in Sources */,
 				1BA9820829D53D57003163E1 /* Performance.swift in Sources */,
 				1BA9820629D53D45003163E1 /* Invoice.swift in Sources */,
+				1B7886D629D9AA390045CB3C /* Types.swift in Sources */,
 				1BA9820D29D53DE0003163E1 /* FileUtil.swift in Sources */,
 				1BA981D829D53CEF003163E1 /* Refactoring_SwiftApp.swift in Sources */,
 				1BA9820429D53D2F003163E1 /* Play.swift in Sources */,

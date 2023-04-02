@@ -6,19 +6,42 @@
 //
 
 import Foundation
+import Combine
 
-class FileUtil {
+class FileUtil: ObservableObject {
+    @Published var result: String = ""
+    
     init() {
+        let plays = loadDictionary(ofType: Play.self, ofFileWithName: "plays.json") ?? [:]
+        let invoices = loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json") ?? []
+        do {
+            try self.calculate(invoices: invoices, plays: plays)
+        } catch let err as Errors {
+            print(err)
+        } catch {
+            
+        }
     }
     
-    func loadDictionary<T: Decodable>(ofType type: T.Type, ofFileWithName name: String) -> [String: T]? {
-        var result = [String:T]()
+    func calculate(invoices: [Invoice], plays: [String: Play]) throws {
+        try invoices.forEach { invoice in
+            result += (try statement(invoice: invoice, plays: plays))
+        }
+    }
+    
+    func loadFileWith(name: String) -> URL? {
         let fileParts = name.split(separator: ".").map{String($0)}
         let (fileName, fileType) = (fileParts[0], fileParts[1])
         guard let url = Bundle.main.url(forResource: fileName, withExtension: fileType) else {
             return nil}
+        return url
+    }
+    
+    func loadDictionary<T: Decodable>(ofType type: T.Type, ofFileWithName name: String) -> [String: T]? {
+        var result = [String:T]()
+        let url = loadFileWith(name: name)
         
-        guard let data = try? Data(contentsOf: url) else {return nil}
+        guard let url = url, let data = try? Data(contentsOf: url) else {return nil}
         let decoder = JSONDecoder()
         
         if let objects = try? decoder.decode([String : T].self, from: data) {
@@ -29,12 +52,8 @@ class FileUtil {
     
     func loadItems<T: Decodable>(ofType type: T.Type, ofFileWithName name: String) -> [T]? {
         var result = [T]()
-        let fileParts = name.split(separator: ".").map{String($0)}
-        let (fileName, fileType) = (fileParts[0], fileParts[1])
-        guard let url = Bundle.main.url(forResource: fileName, withExtension: fileType) else {
-            return nil}
-        
-        guard let data = try? Data(contentsOf: url) else {return nil}
+        let url = loadFileWith(name: name)
+        guard let url = url, let data = try? Data(contentsOf: url) else {return nil}
         let decoder = JSONDecoder()
         
         if let objects = try? decoder.decode([T].self, from: data) {
@@ -94,12 +113,6 @@ class FileUtil {
         result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
         result += "Your earned \(volumeCredits) credit\n"
         return result
-    }
-
-    func calculate(invoices: [Invoice], plays: [String: Play]) throws {
-        try invoices.forEach { invoice in
-            print(try statement(invoice: invoice, plays: plays))
-        }
     }
 
     

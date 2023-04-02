@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Play: Codable {
+struct Play: Codable, Entity {
     var id: String?
     var name: String
     var type: String
