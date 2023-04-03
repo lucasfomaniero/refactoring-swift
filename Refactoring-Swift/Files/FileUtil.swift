@@ -11,11 +11,19 @@ import Combine
 class FileUtil: ObservableObject {
     @Published var result: [String] = []
     
+    let format: NumberFormatter = {
+        let format = NumberFormatter()
+        format.numberStyle = .decimal
+        format.maximumFractionDigits = 2
+        format.minimumFractionDigits = 2
+        format.roundingMode = .halfUp
+        return format
+    }()
+    
     init() {
         let plays = loadDictionary(ofType: Play.self, ofFileWithName: "plays.json") ?? [:]
         let invoices = loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json") ?? []
         do {
-            
             try self.calculate(invoices: invoices, plays: plays)
         } catch let err as Errors {
             print(err)
@@ -26,7 +34,7 @@ class FileUtil: ObservableObject {
     
     func calculate(invoices: [Invoice], plays: [String: Play]) throws {
         try invoices.forEach { invoice in
-            result.append((try statement(invoice: invoice, plays: plays))) 
+            result.append((try statement(invoice: invoice, plays: plays)))
         }
     }
     
@@ -72,12 +80,6 @@ class FileUtil: ObservableObject {
         var totalAmount: Double = 0.0;
         var volumeCredits: Double = 0.0
         var result = "Statement for \(invoice.customer)\n"
-        
-        let format = NumberFormatter()
-        format.numberStyle = .decimal
-        format.maximumFractionDigits = 2
-        format.minimumFractionDigits = 2
-        format.roundingMode = .halfUp
         
         for perf in invoice.performances {
             if let play  = plays[perf.playID]{
