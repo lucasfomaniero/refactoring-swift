@@ -9,28 +9,28 @@ import XCTest
 @testable import Refactoring_Swift
 
 final class Refactoring_SwiftTests: XCTestCase {
-
+    private var fileUtils: FileUtil!
+    private var plays: [String: Play]!
+    private var invoices: [Invoice]!
+    
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        fileUtils = FileUtil()
+        plays = fileUtils.loadDictionary(ofType: Play.self, ofFileWithName: "plays.json")
+        invoices = fileUtils.loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json")
     }
 
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    func testIfJSONFilesAreFetchedCorrectly() throws {
+        XCTAssertNotNil(plays)
+        XCTAssertNotNil(invoices)
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    
+    func testCorrectStringCalculation() throws {
+        let text = "Statement for BigCo\n|-Hamlet: 650,00 (55 seats)\n|-As You Like It: 580,00 (35 seats)\n|-Othello: 500,00 (40 seats)\nAmount owed is 1.730,00\nYour earned 47.0 credit\n"
+        XCTAssertEqual(text, fileUtils.result[0])
     }
 
 }
