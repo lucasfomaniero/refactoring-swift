@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Invoice: Codable {
+struct Invoice: Codable, Entity {
     var customer: String
     var performances: [Performance]
 }

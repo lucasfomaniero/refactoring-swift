@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Performance: Codable {
+struct Performance: Codable, Entity {
     var playID: String
     var audience: Int
 }
