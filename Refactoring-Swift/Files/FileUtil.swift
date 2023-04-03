@@ -9,12 +9,13 @@ import Foundation
 import Combine
 
 class FileUtil: ObservableObject {
-    @Published var result: String = ""
+    @Published var result: [String] = []
     
     init() {
         let plays = loadDictionary(ofType: Play.self, ofFileWithName: "plays.json") ?? [:]
         let invoices = loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json") ?? []
         do {
+            
             try self.calculate(invoices: invoices, plays: plays)
         } catch let err as Errors {
             print(err)
@@ -25,7 +26,7 @@ class FileUtil: ObservableObject {
     
     func calculate(invoices: [Invoice], plays: [String: Play]) throws {
         try invoices.forEach { invoice in
-            result += (try statement(invoice: invoice, plays: plays))
+            result.append((try statement(invoice: invoice, plays: plays))) 
         }
     }
     
@@ -43,12 +44,13 @@ class FileUtil: ObservableObject {
         
         guard let url = url, let data = try? Data(contentsOf: url) else {return nil}
         let decoder = JSONDecoder()
-        
+        print(url)
         if let objects = try? decoder.decode([String : T].self, from: data) {
             result = objects
         }
         return result
     }
+
     
     func loadItems<T: Decodable>(ofType type: T.Type, ofFileWithName name: String) -> [T]? {
         var result = [T]()

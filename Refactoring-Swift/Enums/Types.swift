@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol Entity {
+protocol Entity: Decodable {
     
 }
 
@@ -17,7 +17,7 @@ enum EntityType {
     case invoice
     case performance
     
-    var type: any Entity.Type {
+    var name: any Entity.Type {
         switch self {
         case .play:
             return Play.self
