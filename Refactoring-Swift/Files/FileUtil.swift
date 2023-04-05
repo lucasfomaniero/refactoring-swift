@@ -99,18 +99,25 @@ class FileUtil: ObservableObject {
         return result
     }
     
-    func statement(invoice: Invoice, plays: [String: Play]) throws -> String {
-        var result = "Statement for \(invoice.customer)\n"
-        for perf in invoice.performances {
+    func statement(invoice: Invoice, plays:[String:Play]) throws -> String {
+        let statementData = StatementData(invoice: invoice)
+        statementData.customer = invoice.customer
+        statementData.performances = invoice.performances
+        return try renderPlainStatement(data: statementData)
+    }
+    
+    func renderPlainStatement(data: IStatementData) throws -> String {
+        var result = "Statement for \(data.customer)\n"
+        for perf in data.performances {
             // Exibe a linha para esta requisição
             result += "|-\(playFor(perf).name): \(format.string(from: NSNumber(value: try amountFor(perf) / 100)) ?? "0.0") (\(perf.audience) seats)\n"
         }
         //Slide statement
-        let totalAmount = try totalAmount(invoice)
+        let totalAmount = try totalAmount(data.invoice)
         result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
         
         //Deslocar instruções - Slide statements
-        let volumeCredits: Double = totalVolumeCredits(invoice: invoice)
+        let volumeCredits: Double = totalVolumeCredits(invoice: data.invoice)
         result += "Your earned \(volumeCredits) credit"
         
         return result
