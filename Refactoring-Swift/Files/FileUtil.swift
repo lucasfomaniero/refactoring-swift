@@ -78,7 +78,7 @@ class FileUtil: ObservableObject {
     }
 
     
-    fileprivate func amountFor(_ play: Play, _ aPerformance: Performance) throws -> Int {
+    fileprivate func amountFor(_ aPerformance: Performance) throws -> Int {
         var result: Int = 0
         switch playFor(aPerformance).type {
         case "tragedy":
@@ -109,8 +109,7 @@ class FileUtil: ObservableObject {
         var result = "Statement for \(invoice.customer)\n"
         
         for perf in invoice.performances {
-                let play  = playFor(perf)
-                let thisAmount = try amountFor(play, perf)
+                let thisAmount = try amountFor(perf)
                 //Soma créditos por volume
                 volumeCredits += Double(max(perf.audience - 30, 0))
                 
