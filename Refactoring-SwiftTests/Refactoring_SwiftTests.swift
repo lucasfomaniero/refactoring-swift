@@ -9,14 +9,12 @@ import XCTest
 @testable import Refactoring_Swift
 
 final class Refactoring_SwiftTests: XCTestCase {
+
     private var fileUtils: FileUtil!
-    private var plays: [String: Play]!
-    private var invoices: [Invoice]!
     
     override func setUpWithError() throws {
         fileUtils = FileUtil()
-        plays = fileUtils.loadDictionary(ofType: Play.self, ofFileWithName: "plays.json")
-        invoices = fileUtils.loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json")
+        fileUtils.loadFilesAndCalculate()
     }
 
     override func tearDownWithError() throws {
@@ -24,12 +22,20 @@ final class Refactoring_SwiftTests: XCTestCase {
     }
 
     func testIfJSONFilesAreFetchedCorrectly() throws {
-        XCTAssertNotNil(plays)
-        XCTAssertNotNil(invoices)
+        XCTAssertGreaterThan(fileUtils.plays.count, 0)
+        XCTAssertGreaterThan(fileUtils.invoices.count, 0)
     }
     
     func testCorrectStringCalculation() throws {
-        let text = "Statement for BigCo\n|-Hamlet: 650,00 (55 seats)\n|-As You Like It: 580,00 (35 seats)\n|-Othello: 500,00 (40 seats)\nAmount owed is 1.730,00\nYour earned 47.0 credit\n"
+
+        let text = """
+        Statement for BigCo
+        |-Hamlet: 650.00 (55 seats)
+        |-As You Like It: 580.00 (35 seats)
+        |-Othello: 500.00 (40 seats)
+        Amount owed is 1730.00
+        Your earned 47.0 credit
+        """
         XCTAssertEqual(text, fileUtils.result[0])
     }
 
