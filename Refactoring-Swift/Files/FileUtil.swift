@@ -25,6 +25,10 @@ class FileUtil: ObservableObject {
     }()
     
     init() {
+        
+    }
+    
+    func loadFilesAndCalculate() {
         plays = loadDictionary(ofType: Play.self, ofFileWithName: "plays.json") ?? [:]
         invoices = loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json") ?? []
         do {
@@ -35,7 +39,6 @@ class FileUtil: ObservableObject {
             
         }
     }
-    
     func calculate(invoices: [Invoice], plays: [String: Play]) throws {
         try invoices.forEach { invoice in
             result.append((try statement(invoice: invoice, plays: plays)))

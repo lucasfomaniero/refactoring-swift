@@ -11,13 +11,10 @@ import XCTest
 final class Refactoring_SwiftTests: XCTestCase {
 
     private var fileUtils: FileUtil!
-    private var plays: [String: Play]!
-    private var invoices: [Invoice]!
     
     override func setUpWithError() throws {
         fileUtils = FileUtil()
-        plays = fileUtils.loadDictionary(ofType: Play.self, ofFileWithName: "plays.json")
-        invoices = fileUtils.loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json")
+        fileUtils.loadFilesAndCalculate()
     }
 
     override func tearDownWithError() throws {
@@ -25,8 +22,8 @@ final class Refactoring_SwiftTests: XCTestCase {
     }
 
     func testIfJSONFilesAreFetchedCorrectly() throws {
-        XCTAssertNotNil(plays)
-        XCTAssertNotNil(invoices)
+        XCTAssertGreaterThan(fileUtils.plays.count, 0)
+        XCTAssertGreaterThan(fileUtils.invoices.count, 0)
     }
     
     func testCorrectStringCalculation() throws {
