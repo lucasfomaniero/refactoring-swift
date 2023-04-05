@@ -10,6 +10,8 @@ import Combine
 
 class FileUtil: ObservableObject {
     @Published var result: [String] = []
+    var plays: [String : Play] = [:]
+    var invoices: [Invoice] = []
     
     let format: NumberFormatter = {
         let format = NumberFormatter()
@@ -21,8 +23,8 @@ class FileUtil: ObservableObject {
     }()
     
     init() {
-        let plays = loadDictionary(ofType: Play.self, ofFileWithName: "plays.json") ?? [:]
-        let invoices = loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json") ?? []
+        plays = loadDictionary(ofType: Play.self, ofFileWithName: "plays.json") ?? [:]
+        invoices = loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json") ?? []
         do {
             try self.calculate(invoices: invoices, plays: plays)
         } catch let err as Errors {
@@ -76,24 +78,28 @@ class FileUtil: ObservableObject {
     }
 
     
-    fileprivate func amountForAPerformance(_ play: Play, _ perf: Performance) throws -> Int {
-        var thisAmount: Int = 0
+    fileprivate func amountFor(_ play: Play, _ aPerformance: Performance) throws -> Int {
+        var result: Int = 0
         switch play.type {
         case "tragedy":
-            thisAmount = 40_000
-            if perf.audience > 30 {
-                thisAmount += 1000 * (perf.audience - 30)
+            result = 40_000
+            if aPerformance.audience > 30 {
+                result += 1000 * (aPerformance.audience - 30)
             }
         case "comedy":
-            thisAmount = 30_000
-            if perf.audience > 20 {
-                thisAmount += 10_000 + 500 * (perf.audience - 20)
+            result = 30_000
+            if aPerformance.audience > 20 {
+                result += 10_000 + 500 * (aPerformance.audience - 20)
             }
-            thisAmount += 300 * perf.audience
+            result += 300 * aPerformance.audience
         default:
             throw Errors.unknownTypeError(message: "Unknown Type")
         }
-        return thisAmount
+        return result
+    }
+    
+    func playFor(_ aPerformance: Performance) -> Play {
+        plays[aPerformance.playID]!
     }
     
     func statement(invoice: Invoice, plays: [String: Play]) throws -> String {
@@ -103,11 +109,12 @@ class FileUtil: ObservableObject {
         var result = "Statement for \(invoice.customer)\n"
         
         for perf in invoice.performances {
-            if let play  = plays[perf.playID]{
-                let thisAmount = try amountForAPerformance(play, perf)
-    //Soma créditos por volume
+                let play  = playFor(perf)
+                let thisAmount = try amountFor(play, perf)
+                //Soma créditos por volume
                 volumeCredits += Double(max(perf.audience - 30, 0))
-    //Soma um crédito extra para cada dez espectadores de comédia
+                
+                //Soma um crédito extra para cada dez espectadores de comédia
                 if (play.type == "comedy") {
                     volumeCredits += Double(perf.audience / 5)
                 }
@@ -116,7 +123,7 @@ class FileUtil: ObservableObject {
                 result += "|-\(play.name): \(format.string(from: NSNumber(value: thisAmount / 100)) ?? "0.0") (\(perf.audience) seats)\n"
                 totalAmount += Double(thisAmount)
                 
-            }
+            
                 
         }
         result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
