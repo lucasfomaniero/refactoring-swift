@@ -80,7 +80,7 @@ class FileUtil: ObservableObject {
     
     fileprivate func amountFor(_ play: Play, _ aPerformance: Performance) throws -> Int {
         var result: Int = 0
-        switch play.type {
+        switch playFor(aPerformance).type {
         case "tragedy":
             result = 40_000
             if aPerformance.audience > 30 {
@@ -115,12 +115,12 @@ class FileUtil: ObservableObject {
                 volumeCredits += Double(max(perf.audience - 30, 0))
                 
                 //Soma um crédito extra para cada dez espectadores de comédia
-                if (play.type == "comedy") {
+                if (playFor(perf).type == "comedy") {
                     volumeCredits += Double(perf.audience / 5)
                 }
                 
                 // Exibe a linha para esta requisição
-                result += "|-\(play.name): \(format.string(from: NSNumber(value: thisAmount / 100)) ?? "0.0") (\(perf.audience) seats)\n"
+                result += "|-\(playFor(perf).name): \(format.string(from: NSNumber(value: thisAmount / 100)) ?? "0.0") (\(perf.audience) seats)\n"
                 totalAmount += Double(thisAmount)
                 
             
