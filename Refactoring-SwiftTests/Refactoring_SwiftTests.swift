@@ -30,6 +30,7 @@ final class Refactoring_SwiftTests: XCTestCase {
     }
     
     func testCorrectStringCalculation() throws {
+
         let text = """
         Statement for BigCo
         |-Hamlet: 650.00 (55 seats)
@@ -38,7 +39,6 @@ final class Refactoring_SwiftTests: XCTestCase {
         Amount owed is 1,730.00
         Your earned 47.0 credit
         """
-        
         XCTAssertEqual(text, fileUtils.result[0])
     }
 
