@@ -56,10 +56,8 @@ class FileUtil: ObservableObject {
     func loadDictionary<T: Decodable>(ofType type: T.Type, ofFileWithName name: String) -> [String: T]? {
         var result = [String:T]()
         let url = loadFileWith(name: name)
-        
         guard let url = url, let data = try? Data(contentsOf: url) else {return nil}
         let decoder = JSONDecoder()
-        
         if let objects = try? decoder.decode([String : T].self, from: data) {
             result = objects
         }
@@ -72,9 +70,7 @@ class FileUtil: ObservableObject {
         let url = loadFileWith(name: name)
         guard let url = url, let data = try? Data(contentsOf: url) else {return nil}
         let decoder = JSONDecoder()
-        
         if let objects = try? decoder.decode([T].self, from: data) {
-                
             result = objects.sorted(by: { value1, value2 in
                 String(describing: value1) < String(describing: value2)
             })
@@ -120,17 +116,14 @@ class FileUtil: ObservableObject {
     }
     
     func statement(invoice: Invoice, plays: [String: Play]) throws -> String {
-        
-        var totalAmount: Double = 0.0;
-        
         var result = "Statement for \(invoice.customer)\n"
-        
         for perf in invoice.performances {
-                // Exibe a linha para esta requisição
+            // Exibe a linha para esta requisição
             result += "|-\(playFor(perf).name): \(format.string(from: NSNumber(value: try amountFor(perf) / 100)) ?? "0.0") (\(perf.audience) seats)\n"
-                totalAmount += Double(try amountFor(perf))
-                
         }
+        //Slide statement
+        let totalAmount = try totalAmount(invoice)
+        
         //Deslocar instruções - Slide statements
         let volumeCredits: Double = totalVolumeCredits(invoice: invoice)
         
@@ -139,6 +132,13 @@ class FileUtil: ObservableObject {
         return result
     }
     
+    func totalAmount(_ invoice: Invoice) throws -> Int {
+        var totalAmount = 0
+        for perf in invoice.performances {
+            totalAmount += try amountFor(perf)
+        }
+        return totalAmount
+    }
     func totalVolumeCredits(invoice: Invoice) -> Double{
         var result = 0.0
         //Dividir o laço - Split Loop
