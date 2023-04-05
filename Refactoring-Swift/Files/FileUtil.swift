@@ -52,7 +52,7 @@ class FileUtil: ObservableObject {
         
         guard let url = url, let data = try? Data(contentsOf: url) else {return nil}
         let decoder = JSONDecoder()
-        print(url)
+        
         if let objects = try? decoder.decode([String : T].self, from: data) {
             result = objects
         }
@@ -75,6 +75,24 @@ class FileUtil: ObservableObject {
         return result
     }
     
+    fileprivate func extractedFunc(_ play: Play, _ thisAmount: inout Int, _ perf: Performance) throws {
+        switch play.type {
+        case "tragedy":
+            thisAmount = 40_000
+            if perf.audience > 30 {
+                thisAmount += 1000 * (perf.audience - 30)
+            }
+        case "comedy":
+            thisAmount = 30_000
+            if perf.audience > 20 {
+                thisAmount += 10_000 + 500 * (perf.audience - 20)
+            }
+            thisAmount += 300 * perf.audience
+        default:
+            throw Errors.unknownTypeError(message: "Unknown Type")
+        }
+    }
+    
     func statement(invoice: Invoice, plays: [String: Play]) throws -> String {
         
         var totalAmount: Double = 0.0;
@@ -84,24 +102,9 @@ class FileUtil: ObservableObject {
         for perf in invoice.performances {
             if let play  = plays[perf.playID]{
                 var thisAmount = 0
-                switch play.type {
-                case "tragedy":
-                    thisAmount = 40_000
-                    if perf.audience > 30 {
-                        thisAmount += 1000 * (perf.audience - 30)
-                    }
-                case "comedy":
-                    thisAmount = 30_000
-                    if perf.audience > 20 {
-                        thisAmount += 10_000 + 500 * (perf.audience - 20)
-                    }
-                    thisAmount += 300 * perf.audience
-                default:
-                    throw Errors.unknownTypeError(message: "Unknown Type")
-                }
+                try extractedFunc(play, &thisAmount, perf)
     //Soma créditos por volume
                 volumeCredits += Double(max(perf.audience - 30, 0))
-                print("➡️", perf.audience,  "Volume credits:", volumeCredits)
     //Soma um crédito extra para cada dez espectadores de comédia
                 if (play.type == "comedy") {
                     volumeCredits += Double(perf.audience / 5)
@@ -115,7 +118,7 @@ class FileUtil: ObservableObject {
                 
         }
         result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
-        result += "Your earned \(volumeCredits) credit\n"
+        result += "Your earned \(volumeCredits) credit"
         return result
     }
 
