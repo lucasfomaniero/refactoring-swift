@@ -107,12 +107,12 @@ class FileUtil: ObservableObject {
         }
         //Slide statement
         let totalAmount = try totalAmount(invoice)
+        result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
         
         //Deslocar instruções - Slide statements
         let volumeCredits: Double = totalVolumeCredits(invoice: invoice)
-        
-        result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
         result += "Your earned \(volumeCredits) credit"
+        
         return result
     }
     
