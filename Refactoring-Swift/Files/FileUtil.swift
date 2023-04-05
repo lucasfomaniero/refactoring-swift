@@ -99,22 +99,6 @@ class FileUtil: ObservableObject {
         return result
     }
     
-    func playFor(_ aPerformance: Performance) -> Play {
-        plays[aPerformance.playID]!
-    }
-    
-    fileprivate func volumeCreditsFor(_ aPerformance: Performance) -> Double{
-        var result = 0.0
-        //Soma créditos por volume
-        result += Double(max(aPerformance.audience - 30, 0))
-        
-        //Soma um crédito extra para cada dez espectadores de comédia
-        if (playFor(aPerformance).type == "comedy") {
-            result += Double(aPerformance.audience / 5)
-        }
-        return result
-    }
-    
     func statement(invoice: Invoice, plays: [String: Play]) throws -> String {
         var result = "Statement for \(invoice.customer)\n"
         for perf in invoice.performances {
@@ -139,6 +123,7 @@ class FileUtil: ObservableObject {
         }
         return totalAmount
     }
+    
     func totalVolumeCredits(invoice: Invoice) -> Double{
         var result = 0.0
         //Dividir o laço - Split Loop
@@ -146,6 +131,22 @@ class FileUtil: ObservableObject {
             result += volumeCreditsFor(perf)
         }
         return result
+    }
+    
+    fileprivate func volumeCreditsFor(_ aPerformance: Performance) -> Double{
+        var result = 0.0
+        //Soma créditos por volume
+        result += Double(max(aPerformance.audience - 30, 0))
+        
+        //Soma um crédito extra para cada dez espectadores de comédia
+        if (playFor(aPerformance).type == "comedy") {
+            result += Double(aPerformance.audience / 5)
+        }
+        return result
+    }
+    
+    func playFor(_ aPerformance: Performance) -> Play {
+        plays[aPerformance.playID]!
     }
 
     
