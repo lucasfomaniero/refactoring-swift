@@ -15,7 +15,9 @@ class FileUtil: ObservableObject {
     
     let format: NumberFormatter = {
         let format = NumberFormatter()
-        format.numberStyle = .decimal
+//        format.locale = Locale.current
+//        format.numberStyle = .currency
+//        format.currencyCode = "USD"
         format.maximumFractionDigits = 2
         format.minimumFractionDigits = 2
         format.roundingMode = .halfUp
@@ -117,19 +119,29 @@ class FileUtil: ObservableObject {
     func statement(invoice: Invoice, plays: [String: Play]) throws -> String {
         
         var totalAmount: Double = 0.0;
-        var volumeCredits: Double = 0.0
+        
         var result = "Statement for \(invoice.customer)\n"
         
         for perf in invoice.performances {
-                volumeCredits += volumeCreditsFor(perf)
-                
                 // Exibe a linha para esta requisição
             result += "|-\(playFor(perf).name): \(format.string(from: NSNumber(value: try amountFor(perf) / 100)) ?? "0.0") (\(perf.audience) seats)\n"
                 totalAmount += Double(try amountFor(perf))
                 
         }
+        //Deslocar instruções - Slide statements
+        let volumeCredits: Double = totalVolumeCredits(invoice: invoice)
+        
         result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
         result += "Your earned \(volumeCredits) credit"
+        return result
+    }
+    
+    func totalVolumeCredits(invoice: Invoice) -> Double{
+        var result = 0.0
+        //Dividir o laço - Split Loop
+        for perf in invoice.performances {
+            result += volumeCreditsFor(perf)
+        }
         return result
     }
 
