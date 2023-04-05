@@ -102,6 +102,18 @@ class FileUtil: ObservableObject {
         plays[aPerformance.playID]!
     }
     
+    fileprivate func volumeCreditsFor(_ aPerformance: Performance) -> Double{
+        var result = 0.0
+        //Soma créditos por volume
+        result += Double(max(aPerformance.audience - 30, 0))
+        
+        //Soma um crédito extra para cada dez espectadores de comédia
+        if (playFor(aPerformance).type == "comedy") {
+            result += Double(aPerformance.audience / 5)
+        }
+        return result
+    }
+    
     func statement(invoice: Invoice, plays: [String: Play]) throws -> String {
         
         var totalAmount: Double = 0.0;
@@ -109,20 +121,11 @@ class FileUtil: ObservableObject {
         var result = "Statement for \(invoice.customer)\n"
         
         for perf in invoice.performances {
-                let thisAmount = try amountFor(perf)
-                //Soma créditos por volume
-                volumeCredits += Double(max(perf.audience - 30, 0))
-                
-                //Soma um crédito extra para cada dez espectadores de comédia
-                if (playFor(perf).type == "comedy") {
-                    volumeCredits += Double(perf.audience / 5)
-                }
+                volumeCredits += volumeCreditsFor(perf)
                 
                 // Exibe a linha para esta requisição
-                result += "|-\(playFor(perf).name): \(format.string(from: NSNumber(value: thisAmount / 100)) ?? "0.0") (\(perf.audience) seats)\n"
-                totalAmount += Double(thisAmount)
-                
-            
+            result += "|-\(playFor(perf).name): \(format.string(from: NSNumber(value: try amountFor(perf) / 100)) ?? "0.0") (\(perf.audience) seats)\n"
+                totalAmount += Double(try amountFor(perf))
                 
         }
         result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
