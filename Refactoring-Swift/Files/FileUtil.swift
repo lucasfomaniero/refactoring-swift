@@ -74,8 +74,10 @@ class FileUtil: ObservableObject {
         }
         return result
     }
+
     
-    fileprivate func extractedFunc(_ play: Play, _ thisAmount: inout Int, _ perf: Performance) throws {
+    fileprivate func amountForAPerformance(_ play: Play, _ perf: Performance) throws -> Int {
+        var thisAmount: Int = 0
         switch play.type {
         case "tragedy":
             thisAmount = 40_000
@@ -91,6 +93,7 @@ class FileUtil: ObservableObject {
         default:
             throw Errors.unknownTypeError(message: "Unknown Type")
         }
+        return thisAmount
     }
     
     func statement(invoice: Invoice, plays: [String: Play]) throws -> String {
@@ -101,8 +104,7 @@ class FileUtil: ObservableObject {
         
         for perf in invoice.performances {
             if let play  = plays[perf.playID]{
-                var thisAmount = 0
-                try extractedFunc(play, &thisAmount, perf)
+                let thisAmount = try amountForAPerformance(play, perf)
     //Soma créditos por volume
                 volumeCredits += Double(max(perf.audience - 30, 0))
     //Soma um crédito extra para cada dez espectadores de comédia
