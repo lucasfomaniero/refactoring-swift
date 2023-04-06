@@ -81,28 +81,28 @@ class FileUtil: ObservableObject {
     
     fileprivate func amountFor(_ aPerformance: Performance) throws -> Int {
         var result: Int = 0
-        switch playFor(aPerformance).type {
-        case "tragedy":
+        switch playFor(aPerformance).genre {
+        case .tragedy:
             result = 40_000
             if aPerformance.audience > 30 {
                 result += 1000 * (aPerformance.audience - 30)
             }
-        case "comedy":
+        case .comedy:
             result = 30_000
             if aPerformance.audience > 20 {
                 result += 10_000 + 500 * (aPerformance.audience - 20)
             }
             result += 300 * aPerformance.audience
-        default:
-            throw Errors.unknownTypeError(message: "Unknown Type")
+        case .animation:
+            return 0
+        case .unknown:
+            return 0
         }
         return result
     }
     
     func statement(invoice: Invoice, plays:[String:Play]) throws -> String {
-        let statementData = StatementData(invoice: invoice)
-        statementData.customer = invoice.customer
-        statementData.performances = invoice.performances
+        let statementData = StatementData(customer: invoice.customer, performances: invoice.performances, invoice: invoice)
         return try renderPlainStatement(data: statementData)
     }
     
@@ -146,7 +146,7 @@ class FileUtil: ObservableObject {
         result += Double(max(aPerformance.audience - 30, 0))
         
         //Soma um crédito extra para cada dez espectadores de comédia
-        if (playFor(aPerformance).type == "comedy") {
+        if (playFor(aPerformance).genre == .comedy) {
             result += Double(aPerformance.audience / 5)
         }
         return result

@@ -13,14 +13,16 @@ protocol IStatementData {
     var invoice: Invoice {get set}
 }
 
-class StatementData: IStatementData {
+struct StatementData: IStatementData {
     var customer: String
     var performances: [Performance]
     var invoice: Invoice
     
-    init(customer: String = "", performances: [Performance] = [], invoice: Invoice) {
-        self.customer = customer
-        self.performances = performances
-        self.invoice = invoice
-    }
+//    struct PerformanceData {
+//        let play: Play
+//        let audience: Int
+//        let amount: Int
+//        let volumeCredits: Int
+//
+//    }
 }
