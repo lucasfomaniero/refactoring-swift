@@ -15,7 +15,7 @@ struct Play: Codable, Entity {
         return Genre.allCases.first {$0.rawValue == type} ?? .unknown
     }
     
-    enum Genre:String, Codable, CaseIterable {
+    enum Genre: String, Codable, CaseIterable {
         case comedy = "comedy"
         case tragedy = "tragedy"
         case animation = "animation"

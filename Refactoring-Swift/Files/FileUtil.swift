@@ -15,9 +15,9 @@ class FileUtil: ObservableObject {
     
     let format: NumberFormatter = {
         let format = NumberFormatter()
-//        format.locale = Locale.current
-//        format.numberStyle = .currency
-//        format.currencyCode = "USD"
+        //        format.locale = Locale.current
+        //        format.numberStyle = .currency
+        //        format.currencyCode = "USD"
         format.maximumFractionDigits = 2
         format.minimumFractionDigits = 2
         format.roundingMode = .halfUp
@@ -25,24 +25,31 @@ class FileUtil: ObservableObject {
     }()
     
     init() {
-        
     }
     
-    func loadFilesAndCalculate() {
+    func loadFiles() {
         plays = loadDictionary(ofType: Play.self, ofFileWithName: "plays.json") ?? [:]
         invoices = loadItems(ofType: Invoice.self, ofFileWithName: "invoices.json") ?? []
-        do {
-            try self.calculate(invoices: invoices, plays: plays)
-        } catch let err as Errors {
-            print(err)
-        } catch {
-            
+    }
+    
+    func resetResultData() {
+        if self.result.count > 0 {
+            self.result.removeAll(keepingCapacity: true)
         }
     }
-    func calculate(invoices: [Invoice], plays: [String: Play]) throws {
-        try invoices.forEach { invoice in
-            result.append((try statement(invoice: invoice, plays: plays)))
-        }
+    
+    func getHTMLContent() {
+        resetResultData()
+        self.invoices.forEach { invoice in
+            result.append(( renderHTML(data: .init(invoice: invoice, plays: self.plays))))
+         }
+    }
+    
+    func getPlainContent() {
+        resetResultData()
+         invoices.forEach { invoice in
+             result.append(( renderPlainStatement(data: .init(invoice: invoice, plays: self.plays))))
+         }
     }
     
     func loadFileWith(name: String) -> URL? {
@@ -101,25 +108,52 @@ class FileUtil: ObservableObject {
         return result
     }
     
+    func usd(_ number: Int) -> String {
+        let format = NumberFormatter()
+        format.locale = Locale(identifier: "en-US")
+        format.numberStyle = .currency
+        return format.string(from: NSNumber(value: number/100)) ?? "N/A"
+    }
+
+    
     func statement(invoice: Invoice, plays:[String:Play]) throws -> String {
-        let statementData = StatementData(customer: invoice.customer, performances: invoice.performances, invoice: invoice)
+        let statementData = StatementData(invoice: invoice, plays: plays)
         return try renderPlainStatement(data: statementData)
     }
     
-    func renderPlainStatement(data: IStatementData) throws -> String {
+    func renderPlainStatement(data: StatementData) -> String {
         var result = "Statement for \(data.customer)\n"
         for perf in data.performances {
             // Exibe a linha para esta requisição
-            result += "|-\(playFor(perf).name): \(format.string(from: NSNumber(value: try amountFor(perf) / 100)) ?? "0.0") (\(perf.audience) seats)\n"
+            result += "|-\(perf.play.name): \(usd(perf.amount)) (\(perf.audience) seats)\n"
         }
         //Slide statement
-        let totalAmount = try totalAmount(data.invoice)
-        result += "Amount owed is \(format.string(from: totalAmount/100 as NSNumber) ?? "0.0")\n"
+        let totalAmount = data.totalAmount
+        result += "Amount owed is \(usd(totalAmount))\n"
         
         //Deslocar instruções - Slide statements
-        let volumeCredits: Double = totalVolumeCredits(invoice: data.invoice)
-        result += "Your earned \(volumeCredits) credit"
+//        let volumeCredits: Double = totalVolumeCredits(invoice: data.invoice)
+        result += "Your earned \(data.totalVolumeCredits) credit"
         
+        return result
+    }
+    
+    func htmlStatement(invoice: Invoice, plays: Catalog) -> String {
+        return renderHTML(data: StatementData(invoice: invoice, plays: plays))
+    }
+    
+    func renderHTML(data: StatementData) -> String {
+        var result = "<h1>Statement for \(data.customer)</h1>\n"
+        result += "<table>\n"
+        result += "<tr><th>play</th><th>seats</th><th>cost</th></tr>\n"
+        for performance in data.performances {
+            result += "<tr><td>\(performance.play.name)</td>"
+            result += "<td>\(performance.audience)</td>"
+            result += "<td>\(usd(performance.amount))</td></tr>\n"
+        }
+        result += "</table>\n"
+        result += "<p>Amount owed is <em>\(usd(data.totalAmount))</em></p>\n"
+        result += "<p>You earned <em>\(data.totalVolumeCredits)</em> credits</p>\n"
         return result
     }
     
