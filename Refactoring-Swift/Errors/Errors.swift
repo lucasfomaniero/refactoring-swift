@@ -9,4 +9,5 @@ import Foundation
 
 enum Errors: Error {
     case unknownTypeError(message: String)
+    case errorWhileConvertingHTMLtoAttributedString(message: String)
 }

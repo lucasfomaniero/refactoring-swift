@@ -8,16 +8,18 @@
 import Foundation
 import Combine
 
+enum StatementType:String, CaseIterable {
+    case html = "HTML"
+    case plain = "Plain"
+}
+
 class FileUtil: ObservableObject {
-    @Published var result: [String] = []
+    @Published var result: [AnyHashable] = []
     var plays: [String : Play] = [:]
     var invoices: [Invoice] = []
     
     let format: NumberFormatter = {
         let format = NumberFormatter()
-        //        format.locale = Locale.current
-        //        format.numberStyle = .currency
-        //        format.currencyCode = "USD"
         format.maximumFractionDigits = 2
         format.minimumFractionDigits = 2
         format.roundingMode = .halfUp
@@ -25,6 +27,7 @@ class FileUtil: ObservableObject {
     }()
     
     init() {
+        loadFiles()
     }
     
     func loadFiles() {
@@ -38,18 +41,21 @@ class FileUtil: ObservableObject {
         }
     }
     
-    func getHTMLContent() {
+    func renderContent(type: StatementType, data: StatementData? = nil) {
         resetResultData()
+
+        var action: (_ data: StatementData) -> AnyHashable
+        switch type {
+        case .html:
+            action = renderHTML(data:)
+        case .plain:
+            action = renderPlainStatement(data:)
+        }
+        
         self.invoices.forEach { invoice in
-            result.append(( renderHTML(data: .init(invoice: invoice, plays: self.plays))))
-         }
-    }
-    
-    func getPlainContent() {
-        resetResultData()
-         invoices.forEach { invoice in
-             result.append(( renderPlainStatement(data: .init(invoice: invoice, plays: self.plays))))
-         }
+            let statementData: StatementData = data ?? .init(invoice: invoice, plays: self.plays)
+            result.append(action(statementData))
+        }
     }
     
     func loadFileWith(name: String) -> URL? {
@@ -86,24 +92,17 @@ class FileUtil: ObservableObject {
     }
 
     
-    fileprivate func amountFor(_ aPerformance: Performance) throws -> Int {
+    public final func amountFor(_ aPerformance: Performance) throws -> Int {
         var result: Int = 0
         switch playFor(aPerformance).genre {
-        case .tragedy:
-            result = 40_000
-            if aPerformance.audience > 30 {
-                result += 1000 * (aPerformance.audience - 30)
-            }
-        case .comedy:
-            result = 30_000
-            if aPerformance.audience > 20 {
-                result += 10_000 + 500 * (aPerformance.audience - 20)
-            }
-            result += 300 * aPerformance.audience
-        case .animation:
-            return 0
-        case .unknown:
-            return 0
+            case .tragedy:
+                result = TragedyCalculator(audience: aPerformance.audience).amount
+            case .comedy:
+                result = ComedyCalculator(audience: aPerformance.audience).amount
+            case .animation:
+                return 0
+            case .unknown:
+                return 0
         }
         return result
     }
@@ -113,12 +112,6 @@ class FileUtil: ObservableObject {
         format.locale = Locale(identifier: "en-US")
         format.numberStyle = .currency
         return format.string(from: NSNumber(value: number/100)) ?? "N/A"
-    }
-
-    
-    func statement(invoice: Invoice, plays:[String:Play]) throws -> String {
-        let statementData = StatementData(invoice: invoice, plays: plays)
-        return try renderPlainStatement(data: statementData)
     }
     
     func renderPlainStatement(data: StatementData) -> String {
@@ -132,17 +125,14 @@ class FileUtil: ObservableObject {
         result += "Amount owed is \(usd(totalAmount))\n"
         
         //Deslocar instruções - Slide statements
-//        let volumeCredits: Double = totalVolumeCredits(invoice: data.invoice)
+        //let volumeCredits: Double = totalVolumeCredits(invoice: data.invoice)
         result += "Your earned \(data.totalVolumeCredits) credit"
         
         return result
     }
     
-    func htmlStatement(invoice: Invoice, plays: Catalog) -> String {
-        return renderHTML(data: StatementData(invoice: invoice, plays: plays))
-    }
     
-    func renderHTML(data: StatementData) -> String {
+    func renderHTML(data: StatementData) -> AttributedString {
         var result = "<h1>Statement for \(data.customer)</h1>\n"
         result += "<table>\n"
         result += "<tr><th>play</th><th>seats</th><th>cost</th></tr>\n"
@@ -154,7 +144,16 @@ class FileUtil: ObservableObject {
         result += "</table>\n"
         result += "<p>Amount owed is <em>\(usd(data.totalAmount))</em></p>\n"
         result += "<p>You earned <em>\(data.totalVolumeCredits)</em> credits</p>\n"
-        return result
+        let attrString = try! convertFromHTMLtoAttributedString(htmlText: result)
+        return attrString
+    }
+    
+    func convertFromHTMLtoAttributedString(htmlText: String) throws -> AttributedString {
+        let data = Data(htmlText.utf8)
+        guard let attributedString = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html], documentAttributes: nil) else {
+            throw Errors.errorWhileConvertingHTMLtoAttributedString(message: "Error while parsing HTML text to String")
+        }
+        return AttributedString(attributedString)
     }
     
     func totalAmount(_ invoice: Invoice) throws -> Int {
@@ -163,27 +162,6 @@ class FileUtil: ObservableObject {
             totalAmount += try amountFor(perf)
         }
         return totalAmount
-    }
-    
-    func totalVolumeCredits(invoice: Invoice) -> Double{
-        var result = 0.0
-        //Dividir o laço - Split Loop
-        for perf in invoice.performances {
-            result += volumeCreditsFor(perf)
-        }
-        return result
-    }
-    
-    fileprivate func volumeCreditsFor(_ aPerformance: Performance) -> Double{
-        var result = 0.0
-        //Soma créditos por volume
-        result += Double(max(aPerformance.audience - 30, 0))
-        
-        //Soma um crédito extra para cada dez espectadores de comédia
-        if (playFor(aPerformance).genre == .comedy) {
-            result += Double(aPerformance.audience / 5)
-        }
-        return result
     }
     
     func playFor(_ aPerformance: Performance) -> Play {
